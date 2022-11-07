@@ -11,3 +11,5 @@ def is_int(testint):
 		return True
 	except ValueError:
 		return False
+
+table_name = "sql12550679"

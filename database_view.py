@@ -5,6 +5,7 @@ import login_window
 from tkinter import messagebox
 import sqlite3
 import database_editor
+import basic_operations
 
 conn = sqlite3.connect("tempData")
 v = conn.cursor()
@@ -210,41 +211,6 @@ class DatabaseView():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	def delete_tempdata(self):
 		v.execute("DROP table host_connect_info")
 		self.power = "000000000000000000000000000000"
@@ -274,7 +240,7 @@ class DatabaseView():
 						host=self.host_connect_info[0],
 						user=self.host_connect_info[1],
 						passwd=self.host_connect_info[2],
-						database="JamesPOS"
+						database=basic_operations.table_name
 						
 					)
 					self.c = self.conn.cursor()
@@ -285,6 +251,7 @@ class DatabaseView():
 				except mysql.connector.errors.ProgrammingError:
 					messagebox.showerror(message = "Please Connect Via Admin Access")
 					return None
+
 
 				
 

@@ -1,6 +1,7 @@
 import mysql.connector
 from tkinter import *
 from tkinter import messagebox
+import basic_operations
 
 
 class ConnectToHost:
@@ -123,7 +124,7 @@ class CreateDatabase:
 		
 		
 		try:
-			self.c.execute("CREATE DATABASE JamesPOS")
+			self.c.execute(f"CREATE DATABASE {basic_operations.table_name}")
 
 		except mysql.connector.errors.DatabaseError:
 			pass
@@ -132,7 +133,7 @@ class CreateDatabase:
 		self.alert_entry.delete(0, END)
 		self.alert_entry.insert(0, "Connecting to Databse")
 		self.alert_entry.configure(state=DISABLED)
-		self.database = "JamesPOS"
+		self.database = basic_operations.table_name
 
 		try:
 			self.conn = mysql.connector.connect(

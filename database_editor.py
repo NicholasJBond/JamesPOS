@@ -103,7 +103,7 @@ class create_item():
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database="JamesPOS"
+									database=basic_operations.table_name
 									
 								)
 								self.c = self.conn.cursor()
@@ -124,7 +124,7 @@ class edit_item():
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database="JamesPOS"
+									database=basic_operations.table_name
 									
 								)
 		self.c = self.conn.cursor()
@@ -286,7 +286,7 @@ class delete_item():
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database="JamesPOS"
+									database=basic_operations.table_name
 									
 								)
 		self.c = self.conn.cursor()
@@ -349,7 +349,7 @@ class delete_item():
 
 class create_user():
 	def __init__(self, host):
-		self.database = "JamesPOS"
+		self.database = basic_operations.table_name
 		self.host = host
 		self.root = Tk()
 		self.root.title("Create Item")
@@ -536,4 +536,3 @@ class create_user():
 
 
 		
-create_user(("localhost", "root", "Animation0!"))

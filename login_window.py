@@ -13,7 +13,7 @@ class login_view():
 				host=self.host,
 				user=self.usr,
 				passwd=self.pas,
-				database="JamesPOS"
+				database=basic_operations.table_name
 				
 			)
 			self.c = self.conn.cursor()
