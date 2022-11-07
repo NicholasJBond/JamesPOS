@@ -1,0 +1,32 @@
+--To Do List--
+Current Problems:
+	- Create User button not highlighting correct cells for permisions.
+	- Create User page -> 'create' button does not check whether id is already in use
+
+Features Needed Before Next Release:
+	- Edit User
+	- Delete User
+
+Upcoming Features:
+	- Create Account
+	- Edit Account
+	- Delete Account
+	- Create Rewards
+	- Edit Rewards
+	- Delete Rewards
+	- Export Items
+	- Export User
+	- Export Accounts
+	- Export Rewards
+	- Export Transactions
+	- Export Statistics
+	- View Transactions
+	- View Rewards
+	- View Statistics
+
+Unimplemented Upcoming Features:
+	- Scan Barcodes
+	- Double Scan increases qty by 1
+	- Change Qty
+	- Change Qty to 0 removes line
+	- Paid by cash emails receipt
