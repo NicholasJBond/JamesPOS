@@ -3,6 +3,7 @@ import mysql.connector
 import database_viewer
 class window():
 	def __init__(self):
+		self.fullscreen = False
 		self.root = Tk()
 		self.root.geometry("800x480")
 		self.root.title("POS")
@@ -37,7 +38,16 @@ class window():
 		self.login_frame_button_open_settings = Button(self.login_frame, text="Open Databse", bg=self.background_colour, width=15, height=2, command=self.open_databse_viewer)
 		self.login_frame_button_open_settings.place(anchor=SE, relx=0.95, rely=0.95)
 
-	
+		self.fullscreen_button = Button(self.login_frame, text="Toggle Screen", width = 10, height= 2, font = ("Arial", 15), command = self.toggle_screen)
+		self.fullscreen_button.place(anchor=CENTER, relx=0.1, rely=0.05)
+
+	def toggle_screen(self):
+		if self.fullscreen == False:
+			self.root.attributes("-fullscreen", True)
+			self.fullscreen = True
+		else:
+			self.root.attributes("-fullscreen", False)
+			self.fullscreen = False
 
 	def start_invoice_frame(Self):
 		return True
