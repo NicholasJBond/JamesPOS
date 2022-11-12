@@ -13,7 +13,7 @@ class login_view():
 				host=self.host,
 				user=self.usr,
 				passwd=self.pas,
-				database=basic_operations.table_name
+				database=basic_operations.get_name()
 				
 			)
 			self.c = self.conn.cursor()
@@ -22,7 +22,7 @@ class login_view():
 			return None
 	
 	
-		print("after")
+		
 		
 		self.root = Tk()
 		self.root.title("Login")

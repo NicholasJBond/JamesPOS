@@ -4,6 +4,7 @@ from tkinter import messagebox
 import basic_operations
 
 
+
 class ConnectToHost:
 
 	def submit_command(self):
@@ -18,9 +19,19 @@ class ConnectToHost:
 							host=self.host,
 							user=self.user,
 							passwd=self.passwd,
-							
+							database=self.dbname.get()
 						)
-						self.host_details=[self.host, self.user, self.passwd]
+						self.c =conn.cursor()
+						import sqlite3
+						self.conn2 = sqlite3.connect("tempData")
+						self.s = self.conn2.cursor()
+						self.s.execute("DROP table if exists host_connect_info")
+						
+						self.s.execute('CREATE TABLE host_connect_info(host TEXT, usr TEXT, pass TEXT, tabl TEXT)')
+						
+						self.s.execute("INSERT into host_connect_info(host, usr, pass, tabl) VALUES(?, ?, ?, ?)",[self.host, self.user, self.passwd, self.dbname.get()])
+						self.conn2.commit()
+						
 						self.root.destroy()
 						
 						self.root.quit()
@@ -31,13 +42,13 @@ class ConnectToHost:
 						self.hostE.focus()
 
 					except mysql.connector.errors.ProgrammingError:
-						messagebox.showerror(title="Error :(", message="Incorrect username or password")
+						messagebox.showerror(title="Error :(", message="Incorrect username, password or database name\nDatabase name is likely to be the same as username")
 						self.userE.delete(0, END)
 						self.passwdE.delete(0, END)
 						self.userE.focus()
 
-					except:
-						messagebox.showerror(title="Error :(", message=":( Something went wrong")
+					# except:
+					# 	messagebox.showerror(title="Error :(", message=":( Something went wrong")
 					
 					
 
@@ -74,13 +85,22 @@ class ConnectToHost:
 		self.passwdL.place(anchor=CENTER, relx = 0.5, rely=0.6)
 		self.passwdE = Entry(self.root, width=25, show="•", font=("Arial", 15))
 		self.passwdE.place(anchor=CENTER, relx = 0.5, rely=0.65)
+		self.dbname =Entry(self.root, width = 25)
+		self.dbname.place(anchor=CENTER, relx =0.5, rely=0.725)
+		self.dbname.insert(0, "Insert Database Name")
 		self.submit = Button(self.root, text="Submit", command = lambda:self.submit_command())
 		self.submit.place(anchor=CENTER, relx = 0.5, rely = 0.8)
+		self.dbname.bind("<Button-1>", lambda a: self.dbname.delete(0, END))
 		self.root.bind("<Return>", lambda a:self.submit_command())
 		self.root.mainloop()
+
+
+
+
 	
 class CreateDatabase:
 	def __init__(self, host, user, passwd):
+	
 		self.root = Tk()
 		self.root.geometry("500x500")
 		self.root.title("Create Database")
@@ -124,7 +144,8 @@ class CreateDatabase:
 		
 		
 		try:
-			self.c.execute(f"CREATE DATABASE {basic_operations.table_name}")
+
+			self.c.execute(f"CREATE DATABASE {basic_operations.get_name()}")
 
 		except mysql.connector.errors.DatabaseError:
 			pass
@@ -133,7 +154,7 @@ class CreateDatabase:
 		self.alert_entry.delete(0, END)
 		self.alert_entry.insert(0, "Connecting to Databse")
 		self.alert_entry.configure(state=DISABLED)
-		self.database = basic_operations.table_name
+		self.database = basic_operations.get_name()
 
 		try:
 			self.conn = mysql.connector.connect(
@@ -163,8 +184,7 @@ class CreateDatabase:
 			self.c.execute("CREATE table items(plu TEXT, description TEXT, type INT, category TEXT, points INT, price REAL, quantity REAL)")
 			self.c.execute("CREATE table transactions(id INT, date_s TEXT, time_s TEXT, total REAL, payment TEXT, account TEXT, reward TEXT, total_rewards INT)")
 			self.c.execute("CREATE table transaction_details(id INT, plu TEXT, description TEXT, quantity REAL, price REAL, points INT)")
-			self.c.execute("CREATE table accounts(id INT, name TEXT, value REAL, credit_limit REAL, email TEXT, phone TEXT)")
-			self.c.execute("CREATE table rewards(id INT, name TEXT, value REAL, phone TEXT, email TEXT)")
+			self.c.execute("CREATE table accounts(id INT, name TEXT, value REAL, credit_limit REAL, points INT, email TEXT, phone TEXT)")
 			self.c.execute("CREATE table settings(name TEXT, value TEXT)")
 			self.alert_entry.configure(state=NORMAL)
 			self.alert_entry.delete(0, END)
@@ -209,7 +229,7 @@ def connect():
 	
 	connect_window = ConnectToHost()
 	
-	return connect_window.host_details
+	
 
 def create(host, user, passwd):
 	create_window = CreateDatabase(host ,user , passwd)
