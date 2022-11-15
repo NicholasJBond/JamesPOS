@@ -1,6 +1,6 @@
 from tkinter import *
 import mysql.connector
-import database_viewer
+import database_view
 class window():
 	def __init__(self):
 		self.fullscreen = False
@@ -56,8 +56,7 @@ class window():
 		return True
 
 	def open_databse_viewer(self):
-
-		database_viewer.run()
+		database_view.run()
 
 		
 		return	True

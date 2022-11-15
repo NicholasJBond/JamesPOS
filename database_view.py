@@ -1,5 +1,5 @@
-import mysql.connector
-import database_setup
+
+import admin_access
 from tkinter import *
 import login_window
 from tkinter import messagebox
@@ -7,16 +7,12 @@ import sqlite3
 import database_editor
 import basic_operations
 
-connn = sqlite3.connect("tempData")
-v = connn.cursor()
-
 fg = "blue"
 
 class DatabaseView():
 	def __init__(self):
-		self.host = 0
-		
-		
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
 		
 		self.root = Tk()
 		self.root.title("Database Manager")
@@ -26,8 +22,8 @@ class DatabaseView():
 		self.label=Label(self.root, text="Databse Manager", font=("Arial", 20))
 		self.label.place(anchor=CENTER, relx=0.5, rely =0.04)
 		#Buttons
-		self.admin_access = Button(self.root, text="Admin Access", command= self.host_login, fg='blue')
-		self.admin_access.place(anchor=CENTER, relx=0.5, rely=0.1)
+		self.admin_access_button = Button(self.root, text="Admin Access", command= self.admin_access, fg='blue')
+		self.admin_access_button.place(anchor=CENTER, relx=0.5, rely=0.1)
 
 		self.login_button = Button(self.root, text="Login", command = self.login, fg='blue')
 		self.login_button.place(anchor=CENTER, relx=0.5, rely=0.175)
@@ -51,13 +47,14 @@ class DatabaseView():
 		self.statistics_button = Button(self.root, text="Statistics Viewer",fg='red', command=self.view_statistics)
 		self.statistics_button.place(anchor=CENTER, relx = 0.5, rely= 0.7)
 
+		Button(self.root, text = "Logout", command=self.logout,fg='blue').place(anchor=CENTER, relx=0.5, rely=0.8)
 		
 
 
 
 
 		Label(self.root, text="Logged In As:", font=("Arial", 20)).place(anchor=CENTER, relx=0.2, rely =0.9)
-		self.userEntry = Entry(self.root)
+		self.userEntry = Entry(self.root, font=("Arial", 20))
 		self.userEntry.place(anchor=CENTER, relx = 0.6, rely=0.9)
 		self.userEntry.config(state = DISABLED)
 
@@ -68,7 +65,7 @@ class DatabaseView():
 
 	def view_tables(self):
 		if self.view_tables_button.cget('fg') == "blue":
-			database_editor.view_database(self.host, self.power)
+			database_editor.view_database()
 		return True
 	
 
@@ -91,69 +88,33 @@ class DatabaseView():
 
 	def delete_tempdata(self):
 		if self.delete_tempdata_button.cget('fg') == "blue":
-			v.execute("DROP table host_connect_info")
+			self.v.execute("DROP table host_connect_info")
 			self.power = "000000000000000000000000000000"
 			self.update_buttons()
 
-
+	def logout(self):
+		self.v.execute("DROP TABLE login_info")
+		self.vonn.commit()
+		self.power ="000000000000000000000000000000"
+		self.update_buttons()
+		self.userEntry.config(state = NORMAL)
+		self.userEntry.delete(0, END)
+		self.userEntry.config(state = DISABLED)
 	def login(self):
-		self.a = 1
-		
+		login_window.login()
+
 		try:
-			v.execute("SELECT * FROM host_connect_info")
-			self.a = 0
-			
-		except:
-			messagebox.showerror(message="Error:\nNo Database Selected\nSelect Database through 'Admin Access'")
-		if self.a == 0:
-			import sqlite3
-			conn = sqlite3.connect("tempData")
-			c = conn.cursor()
-			c.execute("SELECT * FROM host_connect_info")
-			data = c.fetchall()
-			if data != []:
-				self.host = [data[0][0], data[0][1], data[0][2]]
-			
-				
-				
-				try:
-
-					self.conn = mysql.connector.connect(
-						host=self.host[0],
-						user=self.host[1],
-						passwd=self.host[2],
-						database=basic_operations.get_name()
-						
-					)
-					self.c = self.conn.cursor()
-				except mysql.connector.errors.InterfaceError:
-					messagebox.showerror(message = "Please Connect to a server")
-					return None
-
-				except mysql.connector.errors.ProgrammingError:
-					messagebox.showerror(message = "Please Connect Via Admin Access")
-					return None
-
-
-
-				self.power = login_window.login(self.host[0],self.host[1],self.host[2])
-				self.npower = self.power
-				if self.npower == "-1":
-					
-					messagebox.showerror(message="Error:\nPlease create a database via\nAdmin Access")
-					self.power = "000000000000000000000000000000"
-				else:
-					
-
-					
-					self.userEntry.config(state = NORMAL)
-					self.userEntry.delete(0, END)
-					self.userEntry.insert(0, self.power[1])
-					self.userEntry.config(state = DISABLED)
-					
-					self.power = str(self.power[0])
-					self.update_buttons()
-					
+			self.v.execute("SELECT * FROM login_info")
+			self.data = self.v.fetchall()
+			self.power =self.data[0][2]
+			self.update_buttons()
+			self.userEntry.config(state = NORMAL)
+			self.userEntry.delete(0, END)
+			self.userEntry.insert(0, self.data[0][1])
+			self.userEntry.config(state = DISABLED)
+		except sqlite3.OperationalError:
+			pass
+		
 
 	def update_buttons(self):
 		
@@ -179,24 +140,13 @@ class DatabaseView():
 		else:
 			button.config(fg = "red")
 
-
-	def host_login(self):
-		
-		database_setup.connect()
-		
-		import sqlite3
-		conn = sqlite3.connect("tempData")
-		c = conn.cursor()
-		c.execute("SELECT * FROM host_connect_info")
-		data = c.fetchall()
-		self.host = [data[0][0], data[0][1], data[0][2]]
-		database_setup.create(self.host[0],self.host[1],self.host[2])
+	def admin_access(self):
+		admin_access.Connect()
 		
 
 
-
-
-
+def run():
+	DatabaseView()
 
 
 

@@ -2,7 +2,7 @@ import mysql.connector
 from tkinter import *
 from tkinter import messagebox
 import basic_operations
-import pandas as pd
+import sqlite3
 from tkinter import ttk
 
 def typeea(value):
@@ -16,8 +16,11 @@ def typeea(value):
 		return "Kg"
 
 class create_item():
-	def __init__(self, host):
-		self.host = host
+	def __init__(self):
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.root = Tk()
 		self.root.title("Create Item")
 		self.root.geometry("500x400+0+0")
@@ -128,7 +131,7 @@ class create_item():
 										host=self.host[0],
 										user=self.host[1],
 										passwd=self.host[2],
-										database=basic_operations.get_name()
+										database=self.host[3]
 										
 									)
 									self.c = self.conn.cursor()
@@ -151,16 +154,19 @@ class create_item():
 
 		return True
 class edit_item():
-	def __init__(self,host, plu):
+	def __init__(self, plu):
 		self.plu_direct = plu
 		
 
-		self.host = host
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.conn = mysql.connector.connect(
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database=basic_operations.get_name()
+									database=self.host[3]
 									
 								)
 		self.c = self.conn.cursor()
@@ -325,12 +331,15 @@ class edit_item():
 		entry.insert(0, inputa)
 class delete_item():
 	def __init__(self,host):
-		self.host = host
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.conn = mysql.connector.connect(
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database=basic_operations.get_name()
+									database=self.host[3]
 									
 								)
 		self.c = self.conn.cursor()
@@ -392,9 +401,12 @@ class delete_item():
 		return True
 
 class create_user():
-	def __init__(self, host):
-		self.database = basic_operations.get_name()
-		self.host = host
+	def __init__(self):
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
+		
 		self.root = Tk()
 		self.root.title("Create User")
 		self.root.geometry("750x600+0+0")
@@ -538,7 +550,7 @@ class create_user():
 				host=self.host[0],
 				user=self.host[1],
 				passwd=self.host[2],
-				database=self.database
+				database=self.host[3]
 				
 			)
 			self.c = self.conn.cursor()
@@ -559,8 +571,10 @@ class create_user():
 class edit_user():
 	def __init__(self, host,b):
 		
-		self.database = basic_operations.get_name()
-		self.host = host
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.root = Tk()
 		self.root.title("Edit User")
 		self.root.geometry("750x600+0+0")
@@ -634,7 +648,7 @@ class edit_user():
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=self.database
+			database=self.host[3]
 			
 		)
 		self.c = self.conn.cursor()
@@ -777,13 +791,15 @@ class edit_user():
 			self.password_entry.delete(0, END)
 class delete_user():
 	def __init__(self, host):
-		self.database = basic_operations.get_name()
-		self.host = host
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.conn = mysql.connector.connect(
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=basic_operations.get_name()
+			database=self.host[3]
 			
 		)
 		self.c = self.conn.cursor()
@@ -833,8 +849,16 @@ class delete_user():
 				self.result_label.configure(text="")
 
 class create_account():
-	def __init__(self, host):
-		self.host = host
+	def __init__(self):
+		
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
+
+
+
+
 		self.root = Tk()
 		self.root.title("Create Account")
 		self.root.geometry("500x400+0+0")
@@ -842,7 +866,7 @@ class create_account():
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=basic_operations.get_name()
+			database=self.host[3]
 									
 		)
 		self.c = self.conn.cursor()
@@ -936,14 +960,17 @@ class create_account():
 class edit_account():
 	def __init__(self,host, ids):
 		self.id_direct = ids
-		
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 
-		self.host = host
+		
 		self.conn = mysql.connector.connect(
 									host=self.host[0],
 									user=self.host[1],
 									passwd=self.host[2],
-									database=basic_operations.get_name()
+									database=self.host[3]
 								)
 		self.c = self.conn.cursor()
 		self.root = Tk()
@@ -1055,16 +1082,21 @@ class edit_account():
 
 
 class view_database():
-	def __init__(self, host, perms):
-		self.perms = str(perms)
-		self.host = host
-		self.database = basic_operations.get_name()
+	def __init__(self):
+		self.vonn = sqlite3.connect("LocalData")
+		self.v = self.vonn.cursor()
+		self.v.execute("SELECT * FROM login_info")
+		self.data = self.v.fetchall()
+		self.perms =self.data[0][2]
+
+		self.v.execute("SELECT * FROM host_connect_info")
+		self.host = self.v.fetchall()[0]
 		self.conn = mysql.connector.connect(
 
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=self.database
+			database=self.host[3]
 			
 		)
 		self.c = self.conn.cursor()
@@ -1168,7 +1200,7 @@ class view_database():
 		self.user_table.place(anchor=N, relx=0.48, rely=0.1)
 	def new_user(self):
 		self.user_checkk=True
-		create_user(self.host)
+		create_user()
 	def append_users(self, a):
 		if a:
 			self.conn = mysql.connector.connect(
@@ -1176,7 +1208,7 @@ class view_database():
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=self.database
+			database=self.host[3]
 			
 		)
 		
@@ -1286,7 +1318,7 @@ class view_database():
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=self.database
+			database=self.host[3]
 			
 		)
 		
@@ -1394,7 +1426,7 @@ class view_database():
 			host=self.host[0],
 			user=self.host[1],
 			passwd=self.host[2],
-			database=self.database
+			database=self.host[3]
 			
 		)
 		
