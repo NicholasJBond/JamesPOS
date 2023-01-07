@@ -94,7 +94,6 @@ class login():
 						self.v.execute("INSERT INTO login_info(user_id, username, permissions) VALUES(?, ?, ?)", [self.data[0][0], self.data[0][1], self.data[0][3]])
 						self.vonn.commit()
 						self.root.destroy()
-						print("hi")
 						self.root.quit()
 					else:
 						messagebox.showerror(message = "Urgent Error:\nUsername and Password Correct.\nPermissions were unreadable, please ask and admin user to reset them for you")

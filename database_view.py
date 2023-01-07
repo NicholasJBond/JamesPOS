@@ -6,6 +6,7 @@ from tkinter import messagebox
 import sqlite3
 import database_editor
 import basic_operations
+import setting
 
 fg = "blue"
 
@@ -74,8 +75,10 @@ class DatabaseView():
 		messagebox.showerror(message="Contact Developer:\nEmail: nicholasjbond2020@gmail.com")
 
 	def local_settings(self):
+		setting.LocalSettings()
 		if self.local_settings_button.cget('fg') == "blue":
-			print("Comming Soon")
+			pass
+		
 
 	def global_settings(self):
 		if self.global_settings_button.cget('fg') == "blue":

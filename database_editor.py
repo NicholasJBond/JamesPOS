@@ -4,6 +4,12 @@ from tkinter import messagebox
 import basic_operations
 import sqlite3
 from tkinter import ttk
+import os
+from os.path import join
+from openpyxl import Workbook, load_workbook
+import datetime
+from openpyxl.styles import Font
+
 
 def typeea(value):
 	if value == "$ per item":
@@ -14,6 +20,15 @@ def typeea(value):
 		return "each"
 	if value == 1:
 		return "Kg"
+def write(path):
+    print('Creating a new file')
+    print(path)
+    name = 'file'  # Name of text file coerced with +.txt
+
+    file = open(join(path, name),'w')   # Trying to create a new file or open one
+    file.close()
+
+
 
 class create_item():
 	def __init__(self):
@@ -569,7 +584,7 @@ class create_user():
 							
 		return True
 class edit_user():
-	def __init__(self, host,b):
+	def __init__(self,b):
 		
 		self.vonn = sqlite3.connect("LocalData")
 		self.v = self.vonn.cursor()
@@ -940,25 +955,33 @@ class create_account():
 						if self.phone_entry.get() == "":
 							self.phone_entry.focus()
 						else:
-							self.c.execute("SELECT * FROM accounts WHERE id = %s", [self.id_entry.get()])
-							self.data1 = self.c.fetchall()
-							self.c.execute("SELECT * FROM items WHERE plu = %s", [self.id_entry.get()])
-							self.data2 = self.c.fetchall()
-							if len(self.data1) == 0 and len(self.data2) ==0:
-								if basic_operations.is_float(self.creditLimit_entry.get()):
-									self.c.execute("INSERT INTO accounts(id, name, value, credit_limit, points, email, phone) VALUES(%s, %s, 0, %s,0,%s,%s)",[self.id_entry.get(), self.name_entry.get(), self.creditLimit_entry.get(),self.email_entry.get(), self.phone_entry.get()])
+							if not basic_operations.is_float(self.creditLimit_entry.get()):
+								self.creditLimit_entry.delete(0, END)
+								self.creditLimit_entry.focus()
+							else:
+								
+								self.c.execute("SELECT * FROM accounts WHERE id = %s", [self.id_entry.get()])
+								self.data1 = self.c.fetchall()
+								self.c.execute("SELECT * FROM items WHERE plu = %s", [self.id_entry.get()])
+								self.data2 = self.c.fetchall()
+								
+								if len(self.data1) == 0 and len(self.data2) ==0:
+									self.id = self.id_entry.get()
+									
+									self.c.execute("INSERT INTO accounts(id, name, value, credit_limit, points, email, phone) VALUES(%s, %s, 0, %s,0,%s,%s)",[self.id, self.name_entry.get(), self.creditLimit_entry.get(),self.email_entry.get(), self.phone_entry.get()])
 									self.conn.commit()
+									
 									self.root.destroy()
 									self.root.quit()
-							else:
-								Label(self.root, text="ID number already in use", fg = 'red').place(anchor=CENTER, relx=0.5, rely=0.65)
-								self.id_entry.delete(0, END)
-								self.id_entry.focus()
-			
+								else:
+									Label(self.root, text="ID number already in use", fg = 'red').place(anchor=CENTER, relx=0.5, rely=0.65)
+									self.id_entry.delete(0, END)
+									self.id_entry.focus()
+				
 
 		return True
 class edit_account():
-	def __init__(self,host, ids):
+	def __init__(self,ids):
 		self.id_direct = ids
 		self.vonn = sqlite3.connect("LocalData")
 		self.v = self.vonn.cursor()
@@ -1150,8 +1173,15 @@ class view_database():
 			self.account_table.bind("<BackSpace>", lambda a:self.delete_accounts())
 			self.account_table.bind("<Button-1>", lambda a:self.account_check())
 
-	
+		if self.perms[4] == "1":
+			
+			self.path_entry = Entry(self.transactiontab, width = 50)
+			self.path_entry.place(anchor=CENTER, relx = 0.5, rely=0.35)
+			self.path_entry.insert(0, f"{os.path.expanduser('~')}/Desktop")
+			
 
+			Button(self.transactiontab, text="Export to excel file", command = self.export_to_excel).place(anchor=CENTER, relx = 0.5, rely=0.5)
+			Label(self.transactiontab, text="A folder will be created called JamesPOS which will contain all exported data.").place(anchor=CENTER, relx=0.5, rely=0.7)
 
 		self.root.mainloop()
 
@@ -1220,44 +1250,54 @@ class view_database():
 		self.data = self.c.fetchall()
 		
 		for i in range(len(self.data)):
-			self.user_table.insert(parent='',index='end',iid=i,text='',values=(f'u{self.data[i][0]}',self.data[i][1],"****",self.data[i][3]))
+			self.user_table.insert(parent='',index='end',iid=i,text='',values=(f'{str(self.data[i][0])}',self.data[i][1],"****",self.data[i][3]))
 
 		return True
 	def open_user(self):
-		
 		self.curUser = self.user_table.focus()
 		self.data = self.user_table.item(self.curUser)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
-			self.user_checkk=True
-			edit_user(self.host, self.id_str)
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM user WHERE id = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
+			edit_user(self.data[0])
 	def delete_users(self):
 		self.curUser = self.user_table.focus()
 		self.data = self.user_table.item(self.curUser)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
-
-			print(self.id_str)
-			self.c.execute("SELECT * FROM user WHERE id = %s", [self.id_str])
-			self.data = self.c.fetchall()
-			if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this user?\n{self.id_str}:{self.data[0][1]}", icon = 'warning') == "yes":
-				self.c.execute("DELETE FROM user WHERE id = %s", [self.data[0][0]])
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM user WHERE id = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
+	
+			
+			if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this user?\n{self.data[0]}:{self.data[1]}", icon = 'warning') == "yes":
+				self.c.execute("DELETE FROM user WHERE id = %s", [self.data[0]])
 				self.conn.commit()
 				self.append_users(True)
+					
 				
-			
 
 	#items
 	def item_check(self):
@@ -1310,7 +1350,7 @@ class view_database():
 		self.item_table.place(anchor=N, relx=0.48, rely=0.1)
 	def new_item(self):
 		self.item_checkk=True
-		create_item(self.host)
+		create_item()
 	def append_items(self, a):
 		if a:
 			self.conn = mysql.connector.connect(
@@ -1330,40 +1370,53 @@ class view_database():
 		self.data = self.c.fetchall()
 		
 		for i in range(len(self.data)):
-			self.item_table.insert(parent='',index='end',iid=i,text='',values=(f'i{self.data[i][0]}',self.data[i][1],typeea(self.data[i][2]),self.data[i][3],self.data[i][4],self.data[i][5],self.data[i][6]))
+			self.item_table.insert(parent='',index='end',iid=i,text='',values=(f'{str(self.data[i][0])}',self.data[i][1],typeea(self.data[i][2]),self.data[i][3],self.data[i][4],self.data[i][5],self.data[i][6]))
 
 		return True
 	def open_item(self):
 		
 		self.curitem = self.item_table.focus()
+
 		self.data = self.item_table.item(self.curitem)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
-			self.item_checkk=True
-			edit_item(self.host, self.id_str)
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM items WHERE plu = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
+			
+			edit_item(self.data[0])
+
 	def delete_items(self):
 		self.curitem = self.item_table.focus()
 		self.data = self.item_table.item(self.curitem)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
-
-			print(self.id_str)
-			self.c.execute("SELECT * FROM items WHERE plu = %s", [self.id_str])
-			self.data = self.c.fetchall()
-			if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this item?\n{self.id_str}:{self.data[0][1]}", icon = 'warning') == "yes":
-				self.c.execute("DELETE FROM items WHERE plu = %s", [self.data[0][0]])
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM items WHERE plu = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
+					
+			
+			if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this item?\n{self.data[0]}:{self.data[1]}", icon = 'warning') == "yes":
+				self.c.execute("DELETE FROM items WHERE plu = %s", [self.data[0]])
 				self.conn.commit()
 				self.append_items(True)
 
@@ -1418,7 +1471,7 @@ class view_database():
 		self.account_table.place(anchor=N, relx=0.48, rely=0.1)
 	def new_account(self):
 		self.account_checkk=True
-		create_account(self.host)
+		create_account()
 	def append_accounts(self, a):
 		if a:
 			self.conn = mysql.connector.connect(
@@ -1438,43 +1491,117 @@ class view_database():
 		self.data = self.c.fetchall()
 		
 		for i in range(len(self.data)):
-			self.account_table.insert(parent='',index='end',iid=i,text='',values=(f'a{self.data[i][0]}',self.data[i][1],self.data[i][2],self.data[i][3],self.data[i][4],self.data[i][5],self.data[i][6]))
+			self.account_table.insert(parent='',index='end',iid=i,text='',values=(f'{str(self.data[i][0])}',self.data[i][1],self.data[i][2],self.data[i][3],self.data[i][4],self.data[i][5],self.data[i][6]))
 
 		return True
 	def open_account(self):
 		
 		self.curaccount = self.account_table.focus()
 		self.data = self.account_table.item(self.curaccount)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
-			self.account_checkk=True
-			edit_account(self.host, self.id_str)
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM accounts WHERE id = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
+			edit_account(self.data[0])
+		
+	
 	def delete_accounts(self):
 		self.curaccount = self.account_table.focus()
 		self.data = self.account_table.item(self.curaccount)['values']
-		self.id_array = []
-		if self.data != "":
-			for i in range(len(self.data[0])):
-				self.id_array.append(self.data[0][i])
-			self.id_array.pop(0)
-			self.id_str=""
-			for i in range(len(self.id_array)):
-				self.id_str= self.id_str+str(self.id_array[i])
+		try:
+			self.data[0]
+			self.success = True
+		except:
+			self.success = False
+		if self.success:
+			while True:
+				self.c.execute("SELECT * FROM accounts WHERE id = %s", [str(self.data[0])])
+				self.data2 = self.c.fetchall()
+				try:
+					self.data2[0]
+					break
+				except IndexError:
+					self.data[0] = "0" + str(self.data[0])
 
-			print(self.id_str)
-			self.c.execute("SELECT * FROM accounts WHERE id = %s", [self.id_str])
-			self.data = self.c.fetchall()
-			if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this account?\n{self.id_str}:{self.data[0][1]}", icon = 'warning') == "yes":
-				self.c.execute("DELETE FROM accounts WHERE id = %s", [self.data[0][0]])
-				self.conn.commit()
-				self.append_accounts(True)
-#view_database(("sql12.freesqldatabase.com", "sql12550679", "DQmEESd6KP"), "011111111111111111111111111111011111111111111111111111111111")
+		if messagebox.askquestion ("Delete User", f"Are you sure you want to delete this account?\n{self.data[0]}:{self.data[1]}", icon = 'warning') == "yes":
+			self.c.execute("DELETE FROM accounts WHERE id = %s", [self.data[0]])
+			self.conn.commit()
+			self.append_accounts(True)
+	def export_to_excel(self):
+		self.datetime = datetime.datetime.now()
+		try:
+			self.path = f"{self.path_entry.get()}/JamesPOS"
+			os.mkdir(self.path)
+			
+		except FileExistsError:
+			pass
+		try:
+			self.path = f"{self.path_entry.get()}/JamesPOS/transactions"
+			os.mkdir(self.path)
+		except FileExistsError:
+			pass
+	
+		self.wb = Workbook()
+		self.tranlist = self.wb.create_sheet("Transaction List", 0)
+		
+		self.tranlist.append(['ID', 'Date', 'Time', 'Total(gst exc.)', 'GST', 'Payment Method', 'Loyalty ID', 'Discounts', 'Amount Recieved', 'Location', 'User ID'])
+		self.tranlist["A1"].font = Font(bold=True)
+		self.tranlist["B1"].font = Font(bold=True)
+		self.tranlist["C1"].font = Font(bold=True)
+		self.tranlist["D1"].font = Font(bold=True)
+		self.tranlist["E1"].font = Font(bold=True)
+		self.tranlist["F1"].font = Font(bold=True)
+		self.tranlist["G1"].font = Font(bold=True)
+		self.tranlist["H1"].font = Font(bold=True)
+		self.tranlist["I1"].font = Font(bold=True)
+		self.tranlist["J1"].font = Font(bold=True)
+		self.tranlist["K1"].font = Font(bold=True)
+
+		self.c.execute("SELECT * FROM transactions ORDER BY id DESC")
+		self.data = self.c.fetchall()
+
+		for i in range(len(self.data)):
+			self.tranlist.append([self.data[i][0], self.data[i][1], self.data[i][2], self.data[i][3], self.data[i][4], self.data[i][5], self.data[i][6], self.data[i][7], self.data[i][8], self.data[i][9], self.data[i][10]])
+
+		self.tranitems = self.wb.create_sheet("Transaction Items", 1)
+		self.tranitems.append(['ID', 'PLU', 'Description', 'Price(gst exc.)', 'GST', 'Shelf Price', 'Loyalty points'])
+		self.tranitems["A1"].font = Font(bold=True)
+		self.tranitems["B1"].font = Font(bold=True)
+		self.tranitems["C1"].font = Font(bold=True)
+		self.tranitems["D1"].font = Font(bold=True)
+		self.tranitems["E1"].font = Font(bold=True)
+		self.tranitems["F1"].font = Font(bold=True)
+		self.tranitems["G1"].font = Font(bold=True)
+		
+
+		self.c.execute("SELECT * FROM transaction_items ORDER BY id DESC")
+		self.data = self.c.fetchall()
+
+		for i in range(len(self.data)):
+			self.tranitems.append([self.data[i][0], self.data[i][1], self.data[i][2], self.data[i][3], self.data[i][4], self.data[i][5],self.data[i][6]])
+
+
+		self.date = str(self.datetime.strftime('%x'))
+		self.date= f'{self.date[0]}{self.date[1]}.{self.date[3]}{self.date[4]}.{self.date[6]}{self.date[7]}'
+
+		self.wb.save(f"{self.path}/Exported {self.datetime.strftime('%c')}.xlsx")
+
+
+
+		
+		return None
+#view_database()
 
 
 
